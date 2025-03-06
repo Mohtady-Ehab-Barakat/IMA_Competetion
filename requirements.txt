@@ -1,0 +1,9 @@
+matplotlib
+scikit-learn
+numpy
+setuptools
+pandas
+wheel
+tensorflow
+openpyxl
+faiss-cpu
