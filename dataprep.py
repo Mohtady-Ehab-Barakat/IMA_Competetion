@@ -5,7 +5,7 @@ file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
 
 # List of columns to use
 columns_needed = [
-    "Player_Name", "Team","Games_Played", "Games_Started", "Minutes_Played", 
+    "Player_Name", "Games_Played", "Games_Started", "Minutes_Played", 
     "Field_Goals_Made", "Field_Goals_Attempted", "FG_percentage", "Three_Pointers_Made",
     "Three_Pointers_Attempted", "Three_Pointers_Percentage", "Two_Pointers_Made",
     "Two_Pointers_Attempted", "Two_Pointers_Percentage", "Effective_Field_Goal_Percentage",
@@ -33,7 +33,6 @@ def calculate_stats(df):
     """ Calculate all relevant stats for players. """
     stats_df = pd.DataFrame()
     stats_df["Player_Name"] = df["Player_Name"]
-    stats_df["Team"] = df["Team"]
     
     stats_df["PPG"] = normalize_stat(df, "Total_Points")
     stats_df["APG"] = normalize_stat(df, "Assists")
@@ -44,7 +43,7 @@ def calculate_stats(df):
     stats_df["TS%"] = df["Total_Points"] / (2 * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"]))
     stats_df["TS%"].fillna(0, inplace=True)
     
-    stats_df["A/T Ratio"] = df["Assists"] / df["Turnovers"]
+    stats_df["A/T Ratio"] = normalize_stat(df, "Assists") / (normalize_stat(df, "Turnovers") + 1e-6)  # Avoid division by zero
     stats_df["A/T Ratio"].fillna(0, inplace=True)
     
     stats_df["EFG%"] = (df["Field_Goals_Made"] + 0.5 * df["Three_Pointers_Made"]) / df["Field_Goals_Attempted"]
@@ -53,7 +52,7 @@ def calculate_stats(df):
     stats_df["3P%"] = df["Three_Pointers_Made"] / df["Three_Pointers_Attempted"]
     stats_df["3P%"].fillna(0, inplace=True)
     
-    stats_df["REB%"] = (df["Offensive_Rebounds"] + df["Defensive_Rebounds"]) / (df["Total_Rebounds"].max() if df["Total_Rebounds"].max() > 0 else 1)
+    stats_df["REB%"] = normalize_stat(df, "Offensive_Rebounds") + normalize_stat(df, "Defensive_Rebounds")
     stats_df["REB%"].fillna(0, inplace=True)
     
     return stats_df
