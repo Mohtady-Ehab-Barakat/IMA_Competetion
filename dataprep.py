@@ -6,7 +6,7 @@ file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
 
 # List of columns to use
 columns_needed = [
-    "Player_Name", "Games_Played", "Games_Started", "Minutes_Played", 
+    "Player_Name", "Team","Games_Played", "Games_Started", "Minutes_Played", 
     "Field_Goals_Made", "Field_Goals_Attempted", "FG_percentage", "Three_Pointers_Made",
     "Three_Pointers_Attempted", "Three_Pointers_Percentage", "Two_Pointers_Made",
     "Two_Pointers_Attempted", "Two_Pointers_Percentage", "Effective_Field_Goal_Percentage",
@@ -34,7 +34,8 @@ def calculate_stats(df):
     """ Calculate all relevant stats for players. """
     stats_df = pd.DataFrame()
     stats_df["Player_Name"] = df["Player_Name"]
-    
+    stats_df["Team"] = df["Team"]
+
     stats_df["PPG"] = normalize_stat(df["Total_Points"])
     stats_df["APG"] = normalize_stat(df["Assists"])
     stats_df["SPG"] = normalize_stat(df["Steals"])
@@ -62,7 +63,7 @@ def calculate_stats(df):
 # Create Excel file with calculated stats
 def create_excel(df):
     output_file = "player_stats_all.xlsx"
-    df.to_excel(output_file, index_label="Player_Name")
+    df.to_excel(output_file, index=False)
     print(f"Data saved successfully to {output_file}")
 
 if __name__ == "__main__":
