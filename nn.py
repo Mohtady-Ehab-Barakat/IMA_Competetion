@@ -10,13 +10,13 @@ def prepare_data_nn(file_path):
     df = pd.read_excel(xls, sheet_name='Sheet1')
     
     columns_needed = [
-        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%"
+        "Player_Name", "PPG", "APG", "SPG", "BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%"
     ]
-    df_filtered = df[columns_needed]
+    df_filtered = df[columns_needed].copy()  # Explicitly make a copy
     
     # Handle missing values by filling with column mean
     numeric_cols = df_filtered.drop(columns=["Player_Name"])
-    df_filtered[numeric_cols.columns] = numeric_cols.fillna(numeric_cols.mean())
+    df_filtered.loc[:, numeric_cols.columns] = numeric_cols.fillna(numeric_cols.mean()).copy()
     
     return df_filtered
 
@@ -28,6 +28,9 @@ def train_neural_network(df):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)  # Normalize the features
     
+    if X_scaled.shape[0] == 0:
+        raise ValueError("Training data is empty after processing. Check the dataset.")
+
     y = np.random.rand(len(X))  # Placeholder target (random similarity scores)
     
     model = keras.Sequential([
@@ -43,20 +46,21 @@ def train_neural_network(df):
 
 # Predict similarity to the need vector
 def find_nearest_players_nn(model, scaler, player_names, X, need, top_n=3):
-    need_scaled = scaler.transform([need])
-    predictions = model.predict(X)
+    need_df = pd.DataFrame([need], columns=X.columns)  # Ensure correct structure
+    need_scaled = scaler.transform(need_df)
     
+    predictions = model.predict(X)
     player_scores = dict(zip(player_names, predictions.flatten()))
     nearest_players = sorted(player_scores, key=player_scores.get, reverse=True)[:top_n]
     
     return nearest_players
 
 if __name__ == "__main__":
-    file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
+    file_path = "player_stats_all.xlsx"
     df = prepare_data_nn(file_path)
     model, scaler, player_names, X = train_neural_network(df)
     
-    need = np.array([1, 300, 50, 120, 0.45, 40, 100, 0.4, 10, 20, 0.5, 0.55, 5, 10, 0.8, 5, 30, 40, 20, 10, 5, 5, 20, 100])
+    need = np.array([0.24, 0.5, 0.72, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
     nearest_players = find_nearest_players_nn(model, scaler, player_names, X, need, top_n=3)
     
     print("Top 3 players closest to the need vector:", nearest_players)

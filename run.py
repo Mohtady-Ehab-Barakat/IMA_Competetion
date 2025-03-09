@@ -9,7 +9,7 @@ from nn import *
 from rf import *
 from svm import *
 from vecctors import *
-
+from needed import *
 
 def get_vectors(file_path, need, weights):
     player_stats_dict = prepare_data(file_path)
@@ -97,8 +97,30 @@ def get_plot(file_path, need, weights):
     common_players = find_intersection(*all_players)
     print("Players common in all methods:", common_players)
 
+
+
+
+def get_top_players_for_teams(file_path):
+    team_needs = calculate_team_needs(file_path)
+    team_top_players = {}
+
+    for team, need in team_needs.items():
+        need_vector = np.array(need)
+        weights = np.ones(len(need_vector))  # Ensure correct shape
+        top_players = get_lists(file_path, need_vector, weights)
+
+        # Flatten and count player occurrences
+        all_players_flat = [player for sublist in top_players for player in sublist]
+        player_counts = Counter(all_players_flat)
+
+        # Get top 3 players
+        top_3_players = [player for player, _ in player_counts.most_common(3)]
+        team_top_players[team] = top_3_players
+
+    return team_top_players
+
 if __name__ == "__main__":
     file_path = "player_stats_all.xlsx"
-    need = np.array([0.24,0.5,0.72,0.5,0.5,0.5,0.5,0.5,0.5,0.5])
     weights = np.array([1, 0.5, 0.8, 1, 1, 2, 1, 1, 2, 1])
-    get_plot(file_path, need, weights)
+    teams_top_players = get_top_players_for_teams(file_path)
+    print(teams_top_players)
