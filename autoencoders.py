@@ -61,7 +61,7 @@ if __name__ == "__main__":
     df = prepare_data_autoencoders(file_path)
     encoder, scaler, player_names, X_scaled = train_autoencoder(df, encoding_dim=16, epochs=50, batch_size=8)
     
-    need = np.array([1, 300, 50, 120, 0.45, 40, 100, 0.4, 10, 20, 0.5, 0.55, 5, 10, 0.8, 5, 30, 40, 20, 10, 5, 5, 20, 100])
+    need = np.array([0.24,0.5,0.72,0.5,0.5,0.5,0.5,0.5,0.5,0.5])
     nearest_players = find_nearest_players_autoencoders(encoder, scaler, player_names, X_scaled, need, top_n=3)
     
     print("Top 3 players closest to the need vector using Autoencoder:", nearest_players)

@@ -9,7 +9,7 @@ from nn import *
 from rf import *
 from svm import *
 from vecctors import *
-from dataprep import *
+
 
 def get_vectors(file_path, need, weights):
     player_stats_dict = prepare_data(file_path)
@@ -98,7 +98,7 @@ def get_plot(file_path, need, weights):
     print("Players common in all methods:", common_players)
 
 if __name__ == "__main__":
-    file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
-    need = np.array([1, 300, 50, 120, 0.45, 40, 100, 0.4, 10, 20, 0.5, 0.55, 5, 10, 0.8, 5, 30, 40, 20, 10, 5, 5, 20, 100])
-    weights = np.array([1, 0.5, 0.8, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1.5, 1, 1, 2, 1, 1, 1, 1.2, 1.2, 1.5, 1, 0.8])
+    file_path = "player_stats_all.xlsx"
+    need = np.array([0.24,0.5,0.72,0.5,0.5,0.5,0.5,0.5,0.5,0.5])
+    weights = np.array([1, 0.5, 0.8, 1, 1, 2, 1, 1, 2, 1])
     get_plot(file_path, need, weights)

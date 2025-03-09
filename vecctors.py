@@ -9,7 +9,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # distance = np.linalg.norm(player1 - player2)
 # print(distance)
-need = np.array([1, 300, 50, 120, 0.45, 40, 100, 0.4, 10, 20, 0.5, 0.55, 5, 10, 0.8, 5, 30, 40, 20, 10, 5, 5, 20, 100])
 
 
 # Load the Excel file
@@ -21,13 +20,7 @@ def prepare_data(file_path):
 
     # Selecting relevant columns
     columns_needed = [
-        "Player_Name", "Games_Started", "Minutes_Played", "Field_Goals_Made",
-        "Field_Goals_Attempted", "FG_percentage", "Three_Pointers_Made",
-        "Three_Pointers_Attempted", "Three_Pointers_Percentage", "Two_Pointers_Made",
-        "Two_Pointers_Attempted", "Two_Pointers_Percentage", "Effective_Field_Goal_Percentage",
-        "Free_Throws_Made", "Free_Throws_Attempted", "Free_Throws_Percentage", "Offensive_Rebounds",
-        "Defensive_Rebounds", "Total_Rebounds", "Assists", "Steals", "Blocks", "Turnovers",
-        "Personal_Fouls", "Total_Points"
+        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%"
     ]
 
     # Filtering the dataframe to only needed columns
@@ -84,7 +77,6 @@ def calculate_manhattan_distance(player_stats_dict, need):
 def get_most_similar_players(player_similarities, n):
     return sorted(player_similarities, key=player_similarities.get, reverse=True)[:n]
 
-weights = np.array([1, 0.5, 0.8, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1.5, 1, 1, 2, 1, 1, 1, 1.2, 1.2, 1.5, 1, 0.8])
 
 def calculate_weighted_distance(player_stats_dict, need, weights):
     player_distances = {}
@@ -98,6 +90,8 @@ def calculate_weighted_distance(player_stats_dict, need, weights):
     return player_distances
 
 if __name__== "__main__":
+    weights = np.array([1, 0.5, 0.8, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1.5, 1, 1, 2, 1, 1, 1, 1.2, 1.2, 1.5, 1, 0.8])
+    need = np.array([1, 300, 50, 120, 0.45, 40, 100, 0.4, 10, 20, 0.5, 0.55, 5, 10, 0.8, 5, 30, 40, 20, 10, 5, 5, 20, 100])
     file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
     player_stats_dict = prepare_data(file_path)
     player_stats_dict = clean_data(player_stats_dict)

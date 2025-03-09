@@ -9,13 +9,7 @@ def prepare_data_svm(file_path):
     df = pd.read_excel(xls, sheet_name='Sheet1')
     
     columns_needed = [
-        "Player_Name", "Games_Started", "Minutes_Played", "Field_Goals_Made",
-        "Field_Goals_Attempted", "FG_percentage", "Three_Pointers_Made",
-        "Three_Pointers_Attempted", "Three_Pointers_Percentage", "Two_Pointers_Made",
-        "Two_Pointers_Attempted", "Two_Pointers_Percentage", "Effective_Field_Goal_Percentage",
-        "Free_Throws_Made", "Free_Throws_Attempted", "Free_Throws_Percentage", "Offensive_Rebounds",
-        "Defensive_Rebounds", "Total_Rebounds", "Assists", "Steals", "Blocks", "Turnovers",
-        "Personal_Fouls", "Total_Points"
+        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%"
     ]
     df_filtered = df[columns_needed]
     
