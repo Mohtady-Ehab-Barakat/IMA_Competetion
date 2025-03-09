@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import numpy as np
 
 file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
 
@@ -24,9 +25,9 @@ def prepare_data(file_path):
     return df
 
 # Normalize non-percentage stats
-def normalize_stat(df, stat):
-    max_value = df[stat].max()
-    return df[stat] / max_value if max_value > 0 else df[stat]
+def normalize_stat(series):
+    max_value = series.max()
+    return series / max_value if max_value > 0 else series
 
 # Universal stat calculation function
 def calculate_stats(df):
@@ -34,16 +35,17 @@ def calculate_stats(df):
     stats_df = pd.DataFrame()
     stats_df["Player_Name"] = df["Player_Name"]
     
-    stats_df["PPG"] = normalize_stat(df, "Total_Points")
-    stats_df["APG"] = normalize_stat(df, "Assists")
-    stats_df["SPG"] = normalize_stat(df, "Steals")
-    stats_df["BPG"] = normalize_stat(df, "Blocks")
-    stats_df["RPG"] = normalize_stat(df, "Offensive_Rebounds") + normalize_stat(df, "Defensive_Rebounds")
+    stats_df["PPG"] = normalize_stat(df["Total_Points"])
+    stats_df["APG"] = normalize_stat(df["Assists"])
+    stats_df["SPG"] = normalize_stat(df["Steals"])
+    stats_df["BPG"] = normalize_stat(df["Blocks"])
+    stats_df["RPG"] = normalize_stat(df["Total_Rebounds"])
     
     stats_df["TS%"] = df["Total_Points"] / (2 * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"]))
     stats_df["TS%"].fillna(0, inplace=True)
     
-    stats_df["A/T Ratio"] = normalize_stat(df, "Assists") / (normalize_stat(df, "Turnovers") + 1e-6)  # Avoid division by zero
+    stats_df["A/T Ratio"] = np.where(df["Turnovers"] > 0, df["Assists"] / df["Turnovers"], 0) 
+    stats_df["A/T Ratio"] = normalize_stat(stats_df["A/T Ratio"])
     stats_df["A/T Ratio"].fillna(0, inplace=True)
     
     stats_df["EFG%"] = (df["Field_Goals_Made"] + 0.5 * df["Three_Pointers_Made"]) / df["Field_Goals_Attempted"]
@@ -52,7 +54,7 @@ def calculate_stats(df):
     stats_df["3P%"] = df["Three_Pointers_Made"] / df["Three_Pointers_Attempted"]
     stats_df["3P%"].fillna(0, inplace=True)
     
-    stats_df["REB%"] = normalize_stat(df, "Offensive_Rebounds") + normalize_stat(df, "Defensive_Rebounds")
+    stats_df["REB%"] = df["Total_Rebounds"] / df["Total_Rebounds"].max() if df["Total_Rebounds"].max() > 0 else df["Total_Rebounds"]
     stats_df["REB%"].fillna(0, inplace=True)
     
     return stats_df
