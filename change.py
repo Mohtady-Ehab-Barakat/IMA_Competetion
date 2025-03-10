@@ -12,7 +12,11 @@ team_stats = df.groupby("Team").sum(numeric_only=True)
 
 # Function to get player stats
 def get_player_stats(player_name):
-    return df[df["Player_Name"] == player_name].drop(columns=["Player_Name", "Team"]).sum(numeric_only=True)
+    player_stats = df[df["Player_Name"] == player_name].drop(columns=["Player_Name", "Team"])
+    player_stats = player_stats.sum(numeric_only=True)
+    
+    # Ensure all expected columns exist and missing ones are filled with 0
+    return player_stats.reindex(team_stats.columns, fill_value=0)
 
 # Calculate impact of adding players
 impact_data = {}
@@ -26,7 +30,8 @@ for team, players in team_players.items():
     added_stats = sum([get_player_stats(player) for player in players], start=pd.Series(0, index=original_stats.index))
 
     new_stats = original_stats + added_stats
-    percentage_change_per_stat = ((new_stats - original_stats) / original_stats) * 100  # Percentage change per stat
+    percentage_change_per_stat = ((new_stats - original_stats) / original_stats.replace(0, np.nan)) * 100  
+    percentage_change_per_stat.fillna(0, inplace=True)  # Convert NaN back to 0
 
     # Calculate the average percentage change across all stats
     average_percentage_change = percentage_change_per_stat.mean()

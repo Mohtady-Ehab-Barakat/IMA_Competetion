@@ -36,28 +36,50 @@ def calculate_stats(df):
     stats_df["Player_Name"] = df["Player_Name"]
     stats_df["Team"] = df["Team"]
 
-    stats_df["PPG"] = normalize_stat(df["Total_Points"])
-    stats_df["APG"] = normalize_stat(df["Assists"])
-    stats_df["SPG"] = normalize_stat(df["Steals"])
-    stats_df["BPG"] = normalize_stat(df["Blocks"])
-    stats_df["RPG"] = normalize_stat(df["Total_Rebounds"])
-    
+    stats_df["PPG"] = df["Total_Points"] / df["Games_Played"]
+    stats_df["APG"] = df["Assists"] / df["Games_Played"]
+    stats_df["SPG"] = df["Steals"] / df["Games_Played"]
+    stats_df["BPG"] = df["Blocks"] / df["Games_Played"]
+    stats_df["RPG"] = df["Total_Rebounds"] / df["Games_Played"]
+
+    # True Shooting Percentage (TS%)
     stats_df["TS%"] = df["Total_Points"] / (2 * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"]))
     stats_df["TS%"].fillna(0, inplace=True)
-    
+
+    # Assist-to-Turnover Ratio (A/T Ratio)
     stats_df["A/T Ratio"] = np.where(df["Turnovers"] > 0, df["Assists"] / df["Turnovers"], 0) 
     stats_df["A/T Ratio"] = normalize_stat(stats_df["A/T Ratio"])
     stats_df["A/T Ratio"].fillna(0, inplace=True)
-    
+
+    # Effective Field Goal Percentage (EFG%)
     stats_df["EFG%"] = (df["Field_Goals_Made"] + 0.5 * df["Three_Pointers_Made"]) / df["Field_Goals_Attempted"]
     stats_df["EFG%"].fillna(0, inplace=True)
-    
+
+    # Three-Point Percentage (3P%)
     stats_df["3P%"] = df["Three_Pointers_Made"] / df["Three_Pointers_Attempted"]
     stats_df["3P%"].fillna(0, inplace=True)
-    
-    stats_df["REB%"] = df["Total_Rebounds"] / df["Total_Rebounds"].max() if df["Total_Rebounds"].max() > 0 else df["Total_Rebounds"]
+
+    # Rebounding Percentage (REB%)
+    stats_df["REB%"] = df["Total_Rebounds"] / df["Total_Rebounds"].sum() if df["Total_Rebounds"].sum() > 0 else df["Total_Rebounds"]
     stats_df["REB%"].fillna(0, inplace=True)
+
+    # Block Percentage (BLK%)
+    team_minutes_played = df["Games_Played"] * 240  # 5 players per 48 min
+    opponent_2pa = df["Field_Goals_Attempted"] - df["Three_Pointers_Attempted"]
+    stats_df["BLK%"] = (df["Blocks"] * (team_minutes_played / 5)) / (df["Minutes_Played"] * opponent_2pa)
+    stats_df["BLK%"] = (stats_df["BLK%"] * 100).replace([np.inf, -np.inf], np.nan).fillna(0)
     
+    # Defensive Rating (DRTG)
+    total_possessions = 0.5 * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"]
+                               - df["Offensive_Rebounds"] + df["Turnovers"])
+    stats_df["DRTG"] = 100 * (df["Total_Points"] * (df["Steals"] + df["Blocks"] + df["Defensive_Rebounds"])) / total_possessions
+    stats_df["DRTG"] = stats_df["DRTG"].replace([np.inf, -np.inf], np.nan).fillna(0)
+    
+    # Usage Percentage (USG%)
+    stats_df["USG%"] = ((df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"] + df["Turnovers"]) * (team_minutes_played / 5)) / \
+                        (df["Minutes_Played"] * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"] + df["Turnovers"]))
+    stats_df["USG%"] = (stats_df["USG%"] * 100).replace([np.inf, -np.inf], np.nan).fillna(0)
+
     return stats_df
 
 # Create Excel file with calculated stats
