@@ -121,6 +121,5 @@ def get_top_players_for_teams(file_path):
 
 if __name__ == "__main__":
     file_path = "player_stats_all.xlsx"
-    weights = np.array([1, 0.5, 0.8, 1, 1, 2, 1, 1, 2, 1])
     teams_top_players = get_top_players_for_teams(file_path)
     print(teams_top_players)
