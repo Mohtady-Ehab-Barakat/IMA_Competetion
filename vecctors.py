@@ -20,7 +20,7 @@ def prepare_data(file_path):
 
     # Selecting relevant columns
     columns_needed = [
-        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%"
+        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%", "BLK%", "DRTG", "USG%"
     ]
 
     # Filtering the dataframe to only needed columns

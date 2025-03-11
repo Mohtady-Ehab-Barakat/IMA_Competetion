@@ -9,7 +9,7 @@ def prepare_data_kmeans(file_path):
     df = pd.read_excel(xls, sheet_name='Sheet1')
     
     columns_needed = [
-        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%"
+        "Player_Name", "PPG", "APG", "SPG",	"BPG", "RPG", "TS%", "A/T Ratio", "EFG%", "3P%", "REB%", "BLK%", "DRTG", "USG%"
     ]
     df_filtered = df[columns_needed]
     
