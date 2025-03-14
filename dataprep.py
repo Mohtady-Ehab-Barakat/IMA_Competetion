@@ -1,12 +1,11 @@
 import pandas as pd
-import os
 import numpy as np
 
 file_path = "2025_scc_5a_nba_player_data_2023.xlsx"
 
 # List of columns to use
 columns_needed = [
-    "Player_Name", "Team","Games_Played", "Games_Started", "Minutes_Played", 
+    "Player_Name", "Team", "Games_Played", "Games_Started", "Minutes_Played", 
     "Field_Goals_Made", "Field_Goals_Attempted", "FG_percentage", "Three_Pointers_Made",
     "Three_Pointers_Attempted", "Three_Pointers_Percentage", "Two_Pointers_Made",
     "Two_Pointers_Attempted", "Two_Pointers_Percentage", "Effective_Field_Goal_Percentage",
@@ -24,14 +23,12 @@ def prepare_data(file_path):
     print("Data Loaded:", df.head())
     return df
 
-# Normalize non-percentage stats
+# Min-Max Normalization function
 def normalize_stat(series):
-    max_value = series.max()
-    return series / max_value if max_value > 0 else series
+    return (series - series.min()) / (series.max() - series.min()) if series.max() > 0 else series
 
 # Universal stat calculation function
 def calculate_stats(df):
-    """ Calculate all relevant stats for players. """
     stats_df = pd.DataFrame()
     stats_df["Player_Name"] = df["Player_Name"]
     stats_df["Team"] = df["Team"]
@@ -48,7 +45,6 @@ def calculate_stats(df):
 
     # Assist-to-Turnover Ratio (A/T Ratio)
     stats_df["A/T Ratio"] = np.where(df["Turnovers"] > 0, df["Assists"] / df["Turnovers"], 0) 
-    stats_df["A/T Ratio"] = normalize_stat(stats_df["A/T Ratio"])
     stats_df["A/T Ratio"].fillna(0, inplace=True)
 
     # Effective Field Goal Percentage (EFG%)
@@ -63,23 +59,25 @@ def calculate_stats(df):
     stats_df["REB%"] = df["Total_Rebounds"] / df["Total_Rebounds"].sum() if df["Total_Rebounds"].sum() > 0 else df["Total_Rebounds"]
     stats_df["REB%"].fillna(0, inplace=True)
 
-    # Block Percentage (BLK%)
+    # Block Percentage (BLK%) - Fixing zero issue
     team_minutes_played = df["Games_Played"] * 240  # 5 players per 48 min
     opponent_2pa = df["Field_Goals_Attempted"] - df["Three_Pointers_Attempted"]
-    stats_df["BLK%"] = (df["Blocks"] * (team_minutes_played / 5)) / (df["Minutes_Played"] * opponent_2pa)
-    stats_df["BLK%"] = (stats_df["BLK%"] * 100).replace([np.inf, -np.inf], np.nan).fillna(0)
-    
+    stats_df["BLK%"] = np.where(opponent_2pa > 0, (df["Blocks"] * (team_minutes_played / 5)) / (df["Minutes_Played"] * opponent_2pa), 0)
+    stats_df["BLK%"].fillna(0, inplace=True)
+
     # Defensive Rating (DRTG)
-    total_possessions = 0.5 * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"]
-                               - df["Offensive_Rebounds"] + df["Turnovers"])
-    stats_df["DRTG"] = 100 * (df["Total_Points"] * (df["Steals"] + df["Blocks"] + df["Defensive_Rebounds"])) / total_possessions
-    stats_df["DRTG"] = stats_df["DRTG"].replace([np.inf, -np.inf], np.nan).fillna(0)
+    total_possessions = 0.5 * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"] - df["Offensive_Rebounds"] + df["Turnovers"])
+    stats_df["DRTG"] = np.where(total_possessions > 0, 100 * (df["Total_Points"] / total_possessions), 0)
+    stats_df["DRTG"].fillna(0, inplace=True)
     
     # Usage Percentage (USG%)
-    stats_df["USG%"] = ((df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"] + df["Turnovers"]) * (team_minutes_played / 5)) / \
-                        (df["Minutes_Played"] * (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"] + df["Turnovers"]))
-    stats_df["USG%"] = (stats_df["USG%"] * 100).replace([np.inf, -np.inf], np.nan).fillna(0)
+    stats_df["USG%"] = np.where(df["Minutes_Played"] > 0, (df["Field_Goals_Attempted"] + 0.44 * df["Free_Throws_Attempted"] + df["Turnovers"]) / df["Minutes_Played"], 0)
+    stats_df["USG%"].fillna(0, inplace=True)
 
+    # Normalize all calculated stats
+    numeric_cols = stats_df.select_dtypes(include=['float64', 'int64']).columns
+    stats_df[numeric_cols] = stats_df[numeric_cols].apply(normalize_stat)
+    
     return stats_df
 
 # Create Excel file with calculated stats
@@ -92,4 +90,4 @@ if __name__ == "__main__":
     df = prepare_data(file_path)
     stats_df = calculate_stats(df)
     create_excel(stats_df)
-    print("Excel file created successfully!")
+    print("Excel file updated with normalized stats for all metrics!")
