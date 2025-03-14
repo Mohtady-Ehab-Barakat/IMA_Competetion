@@ -2,12 +2,34 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from run import *
+from collections import Counter
 
 # Load player statistics
 file_path = "player_stats_all.xlsx"
 df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-team_players = get_top_players_for_teams(file_path)
+# Run the function 100 times and collect results
+iterations = 100
+team_players_counts = {}
+
+for _ in range(iterations):
+    temp_team_players = get_top_players_for_teams(file_path)
+
+    for team, players in temp_team_players.items():
+        if team not in team_players_counts:
+            team_players_counts[team] = Counter()
+        team_players_counts[team].update(players)
+
+# Compute the top 3 players based on frequency
+team_players = {
+    team: [player for player, _ in counter.most_common(3)]
+    for team, counter in team_players_counts.items()
+}
+
+# Print the results
+print("Top players for each team after 100 iterations:")
+for team, players in team_players.items():
+    print(f"{team}: {', '.join(players)}")
 
 # Aggregate stats for each team before adding new players
 team_stats = df.groupby("Team").sum(numeric_only=True)
