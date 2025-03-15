@@ -19,7 +19,10 @@ def prepare_data(file_path):
     print(f"Loading data from: {file_path}")
     df = pd.read_excel(file_path, sheet_name='Sheet1')
     df = df[columns_needed].copy()
+    
+    # Replace NaN values and empty values with 0
     df.fillna(0, inplace=True)
+    df.replace("", 0, inplace=True)
     print("Data Loaded:", df.head())
     return df
 
@@ -82,6 +85,8 @@ def calculate_stats(df):
 
 # Create Excel file with calculated stats
 def create_excel(df):
+    df.fillna(0, inplace=True)
+    df.replace("", 0, inplace=True)
     output_file = "player_stats_all.xlsx"
     df.to_excel(output_file, index=False)
     print(f"Data saved successfully to {output_file}")
